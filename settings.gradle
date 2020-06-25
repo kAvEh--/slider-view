@@ -1,2 +1,3 @@
+include ':sliderview'
 include ':app'
 rootProject.name = "Slider"
