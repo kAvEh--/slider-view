@@ -6,14 +6,19 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class ArcProgressView @JvmOverloads constructor(
+class DeepProgressView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
@@ -23,21 +28,17 @@ class ArcProgressView @JvmOverloads constructor(
 
     private var oval = RectF()
     private val mPaintBg = Paint()
+    private val mPaintBgShadow = Paint()
     private val mPaintProgress = Paint()
     private val mPaintIndicator = Paint()
     private val mClickEffectPaint = Paint()
     private var mEffectRadius = 0F
     private var strokeWidth = 40F
     private var mIndicatorRadius = 26F
-    private var mPath = Path()
-    private var mPath2 = Path()
+    private var mRectF = RectF()
     private var mProgress = 0F
-    private lateinit var p0: Pair<Float, Float>
-    private lateinit var p1: Pair<Float, Float>
-    private lateinit var p2: Pair<Float, Float>
-    private var p3: Pair<Float, Float> = Pair(width.toFloat(), height.toFloat() - height / 4f)
     private var isTouched = false
-    private var isClickEffectEnabled = true
+    private var isRotateEffectEnabled = false
     private lateinit var mBitmap: Bitmap
     private lateinit var mListener: OnCustomEventListener
     private var mBackgroundColor = Color.parseColor("#c1c1c1")
@@ -50,10 +51,6 @@ class ArcProgressView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        p0 = Pair(mIndicatorRadius * 2, height.toFloat() - height / 4f)
-        p1 = Pair(width / 4f, height / 2f - height / 4f)
-        p2 = Pair(width / 2f + width / 4f, height / 2f - height / 4f)
-        p3 = Pair(width.toFloat() - mIndicatorRadius * 2, height.toFloat() - height / 4f)
         stripesWidth = width / 45F
         createObjects()
     }
@@ -63,7 +60,7 @@ class ArcProgressView @JvmOverloads constructor(
      *
      * @param progress Should be 0 ~ 1.
      */
-    var progress: Float
+    private var progress: Float
         get() = mProgress
         set(progress) {
             if (mProgress != progress && (progress >= 0 || progress <= 1)) {
@@ -75,10 +72,10 @@ class ArcProgressView @JvmOverloads constructor(
             }
         }
 
-    var clickEffectEnabled: Boolean
-        get() = isClickEffectEnabled
+    var rotateEffectEnabled: Boolean
+        get() = isRotateEffectEnabled
         set(value) {
-            isClickEffectEnabled = value
+            isRotateEffectEnabled = value
         }
 
     var effectRadius: Float
@@ -94,12 +91,6 @@ class ArcProgressView @JvmOverloads constructor(
         get() = strokeWidth
         set(value) {
             strokeWidth = value
-        }
-
-    var indicatorRadius: Float
-        get() = mIndicatorRadius
-        set(value) {
-            mIndicatorRadius = value
         }
 
     var bgColor: Int
@@ -140,18 +131,21 @@ class ArcProgressView @JvmOverloads constructor(
 
     @SuppressLint("ResourceAsColor")
     private fun createObjects() {
+        mIndicatorRadius = height * .5F
         oval.left = strokeWidth
         oval.top = strokeWidth
         oval.right = width.toFloat() - strokeWidth
         oval.bottom = height * 2F - strokeWidth
         mPaintBg.style = Paint.Style.STROKE
-        mPaintBg.strokeWidth = 15.0F
+        mPaintBg.strokeWidth = 25.0F
         mPaintBg.strokeCap = Paint.Cap.ROUND
         mPaintBg.isAntiAlias = true
         mPaintBg.color = mBackgroundColor
-        mPaintBg.setShadowLayer(10.0f, 0.0f, -8.0f, Color.LTGRAY)
+        mPaintBgShadow.strokeWidth = 1F
+        mPaintBgShadow.color = Color.TRANSPARENT
+        mPaintBgShadow.setShadowLayer(10.0f, 0f, 0f, Color.BLACK)
         mPaintProgress.style = Paint.Style.STROKE
-        mPaintProgress.strokeWidth = 15.0F
+        mPaintProgress.strokeWidth = 3.0F
         mPaintProgress.strokeCap = Paint.Cap.ROUND
         mPaintProgress.isAntiAlias = true
         mPaintProgress.color = mForegroundColor
@@ -159,9 +153,10 @@ class ArcProgressView @JvmOverloads constructor(
         mPaintIndicator.strokeCap = Paint.Cap.ROUND
         mPaintIndicator.isAntiAlias = true
         mPaintIndicator.color = mIndicatorColor
-        mPaintIndicator.setShadowLayer(mIndicatorRadius, 0.0f, 0.0f, Color.BLACK)
-        mBallPaint.style = Paint.Style.FILL
+//        mPaintIndicator.setShadowLayer(mIndicatorRadius, 0.0f, 0.0f, Color.BLACK)
+        mBallPaint.style = Paint.Style.STROKE
         mBallPaint.strokeCap = Paint.Cap.ROUND
+        mBallPaint.strokeWidth = 5F
         mBallPaint.isAntiAlias = true
         mBallPaint.color = Color.MAGENTA
         mClickEffectPaint.style = Paint.Style.STROKE
@@ -169,46 +164,35 @@ class ArcProgressView @JvmOverloads constructor(
         mClickEffectPaint.strokeCap = Paint.Cap.ROUND
         mClickEffectPaint.isAntiAlias = true
         mClickEffectPaint.color = mEffectColor
+
+        val bgDrawable: LayerDrawable = ContextCompat.getDrawable(context, R.drawable.progress_bg) as LayerDrawable
+        val bg = bgDrawable.findDrawableByLayerId(R.id.barBg) as GradientDrawable?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            bg?.setTint(Color.RED)
+        }
+        this.background = bgDrawable
     }
 
     override fun onDraw(canvas: Canvas) {
-        mPath.moveTo(p0.first, p0.second)
-        mPath.cubicTo(p1.first, p1.second,
-                p2.first, p2.second,
-                p3.first, p3.second
-        )
-        canvas.drawPath(mPath, mPaintBg)
-        val tmp = getPoint(mProgress)
-        val path2 = getSubPath(mPath, 0F, mProgress)
-        mPath2.reset()
-        mPath2.addCircle(tmp.first, tmp.second, mIndicatorRadius, Path.Direction.CW)
-        canvas.drawPath(path2, mPaintProgress)
-
         if (::mBitmap.isInitialized)
-            canvas.drawBitmap(mBitmap, tmp.first - mBitmap.width / 2, tmp.second - mBitmap.height / 2, mPaintIndicator)
+            canvas.drawBitmap(mBitmap, progress * width - mBitmap.width / 2, height / 2F - mBitmap.height / 2, mPaintIndicator)
         else {
-            canvas.drawCircle(tmp.first, tmp.second, mIndicatorRadius, mPaintIndicator)
+            canvas.drawCircle(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius, height / 2F, mIndicatorRadius * .8f, mPaintIndicator)
         }
-
-        if (isClickEffectEnabled) {
-            canvas.drawCircle(tmp.first, tmp.second, mEffectRadius, mClickEffectPaint)
+        if (rotateEffectEnabled) {
+            var tt = getDistance(progress * width + mIndicatorRadius)
+            mRectF.set(progress * width, 0F, progress * width + mIndicatorRadius, height.toFloat())
+            while (tt < mIndicatorRadius * 2) {
+                if (tt > mIndicatorRadius) {
+                    mRectF.set(progress * width + mIndicatorRadius - tt, 0F, progress * width - (mIndicatorRadius - tt), height.toFloat())
+                    canvas.drawArc(mRectF, 90F, 180F, true, mBallPaint)
+                } else {
+                    mRectF.set(progress * width - (mIndicatorRadius - tt), 0F, progress * width + mIndicatorRadius - tt, height.toFloat())
+                    canvas.drawArc(mRectF, 90F, -180F, true, mBallPaint)
+                }
+                tt += stripesWidth
+            }
         }
-//        var tt = getDistance(tmp.first + mIndicatorRadius)
-//        changeColor()
-//        canvas.drawCircle(tmp.first, tmp.second, mIndicatorRadius, mBallPaint)
-//        while (tt < mIndicatorRadius * 2) {
-//            changeColor()
-//            canvas.drawPath(getSubPath(mPath2, tt / (mIndicatorRadius * 4), 1 - tt / (mIndicatorRadius * 4)), mBallPaint)
-//            tt += stripesWidth
-//        }
-    }
-
-    private fun changeColor() {
-        if (ballIndicator)
-            mBallPaint.color = Color.MAGENTA
-        else
-            mBallPaint.color = Color.YELLOW
-        ballIndicator = !ballIndicator
     }
 
     private fun getDistance(x: Float): Float {
@@ -216,38 +200,8 @@ class ArcProgressView @JvmOverloads constructor(
         return (x - ((x / stripesWidth).toInt() * stripesWidth))
     }
 
-    private fun getSubPath(path: Path, start: Float, end: Float): Path {
-        val subPath = Path()
-        val pathMeasure = PathMeasure(path, false)
-        pathMeasure.getSegment(start * pathMeasure.length, end * pathMeasure.length, subPath, true)
-        return subPath
-    }
-
-    private fun getPoint(progress: Float): Pair<Float, Float> {
-        val mPoint: Pair<Float, Float>
-        var x = (1 - progress).toDouble().pow(3.0) * p0.first +
-                3 * (1 - progress).toDouble().pow(2.0) * progress * p1.first +
-                3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.first +
-                progress.toDouble().pow(3.0) * p3.first
-        var y = (1 - progress).toDouble().pow(3.0) * p0.second +
-                3 * (1 - progress).toDouble().pow(2.0) * progress * p1.second +
-                3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.second +
-                progress.toDouble().pow(3.0) * p3.second
-        if (x < p0.first) {
-            x = p0.first.toDouble()
-        } else if (x > p3.first) {
-            x = p3.first.toDouble()
-        }
-        if (y > p0.second) {
-            y = p0.second.toDouble()
-        }
-        mPoint = Pair(x.toFloat(), y.toFloat())
-        return mPoint
-    }
-
     private fun isTouchedNear(x: Float, y: Float) {
-        val tmp = getPoint(mProgress)
-        if (sqrt(((tmp.first - x).pow(2) + (tmp.second - y).pow(2)).toDouble()) < mIndicatorRadius + 5) {
+        if (sqrt(((progress * width - x).pow(2) + (height / 2F - y).pow(2)).toDouble()) < mIndicatorRadius + 5) {
             isTouched = true
         }
     }
@@ -257,19 +211,18 @@ class ArcProgressView @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isTouchedNear(event.x, event.y)
-                if (isClickEffectEnabled)
+                if (isRotateEffectEnabled)
                     startAnimation()
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
             }
             MotionEvent.ACTION_MOVE -> {
-                //TODO must improve tracking of indicator
                 if (isTouched) {
                     progress = when {
-                        event.x < 0 -> 0F
-                        event.x > width -> 1F
-                        else -> event.x / width
+                        event.x < mIndicatorRadius -> 0F
+                        event.x > width - mIndicatorRadius -> 1F
+                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
                     }
                 }
             }
