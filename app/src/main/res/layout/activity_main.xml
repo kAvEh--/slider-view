@@ -35,7 +35,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:background="#27F36A21"
         app:layout_constraintTop_toBottomOf="@id/deep_progress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

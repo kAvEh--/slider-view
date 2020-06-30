@@ -1,21 +1,15 @@
 package com.kaveh.sliderview
 
-import android.animation.Animator
 import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateInterpolator
-import android.view.animation.LinearInterpolator
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 
 class StepperSlider @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -25,25 +19,20 @@ class StepperSlider @JvmOverloads constructor(
         fun onChanged(progress: Float)
     }
 
-    private var oval = RectF()
     private val mPaintBg = Paint()
-    private val mPaintBgShadow = Paint()
     private val mPaintProgress = Paint()
     private val mPaintIndicator = Paint()
-    private val mClickEffectPaint = Paint()
-    private var mEffectRadius = 0F
-    private var strokeWidth = 40F
+    private val mPaintPoint = Paint()
     private var mIndicatorRadius = 26F
-    private var mRectF = RectF()
     private var mProgress = 0F
     private var isTouched = false
-    private var isRotateEffectEnabled = false
+    private var stepperCount = 0
     private lateinit var mBitmap: Bitmap
     private lateinit var mListener: OnCustomEventListener
     private var mBackgroundColor = Color.parseColor("#c1c1c1")
     private var mBorderColor = Color.parseColor("#c1c1c1")
     private var mIndicatorColor = Color.parseColor("#FFFFFF")
-    private var mEffectColor = Color.parseColor("#F43636")
+    private var mPointColor = Color.parseColor("#000000")
     private val mBallPaint = Paint()
     private var stripesWidth = 0F
     private var ballIndicator = false
@@ -75,25 +64,10 @@ class StepperSlider @JvmOverloads constructor(
             }
         }
 
-    var rotateEffectEnabled: Boolean
-        get() = isRotateEffectEnabled
+    var stepper: Int
+        get() = stepperCount
         set(value) {
-            isRotateEffectEnabled = value
-        }
-
-    var effectRadius: Float
-        get() = mEffectRadius
-        set(radius) {
-            if (mEffectRadius != radius) {
-                mEffectRadius = radius
-                invalidate()
-            }
-        }
-
-    var barRadius: Float
-        get() = strokeWidth
-        set(value) {
-            strokeWidth = value
+            stepperCount = value
         }
 
     var bgColor: Int
@@ -117,16 +91,12 @@ class StepperSlider @JvmOverloads constructor(
             invalidate()
         }
 
-    var effectColor: Int
-        get() = mEffectColor
+    var pointColor: Int
+        get() = mPointColor
         set(color) {
-            mEffectColor = color
+            mPointColor = color
             invalidate()
         }
-
-    fun setIndicatorBitmap(bitmap: Bitmap) {
-        mBitmap = bitmap
-    }
 
     fun setOnChangeListener(listener: OnCustomEventListener) {
         mListener = listener
@@ -137,18 +107,10 @@ class StepperSlider @JvmOverloads constructor(
     private fun createObjects() {
         indicatorPY = height / 2F
         mIndicatorRadius = height * .5F
-        oval.left = strokeWidth
-        oval.top = strokeWidth
-        oval.right = width.toFloat() - strokeWidth
-        oval.bottom = height * 2F - strokeWidth
-        mPaintBg.style = Paint.Style.STROKE
-        mPaintBg.strokeWidth = 25.0F
+        mPaintBg.style = Paint.Style.FILL
         mPaintBg.strokeCap = Paint.Cap.ROUND
         mPaintBg.isAntiAlias = true
         mPaintBg.color = mBackgroundColor
-        mPaintBgShadow.strokeWidth = 1F
-        mPaintBgShadow.color = Color.TRANSPARENT
-        mPaintBgShadow.setShadowLayer(10.0f, 0f, 0f, Color.BLACK)
         mPaintProgress.style = Paint.Style.STROKE
         mPaintProgress.strokeWidth = 3.0F
         mPaintProgress.strokeCap = Paint.Cap.ROUND
@@ -165,40 +127,29 @@ class StepperSlider @JvmOverloads constructor(
         mBallPaint.strokeWidth = 1F
         mBallPaint.isAntiAlias = true
         mBallPaint.color = Color.MAGENTA
-        mClickEffectPaint.style = Paint.Style.FILL
-        mClickEffectPaint.strokeWidth = 5.0F
-        mClickEffectPaint.strokeCap = Paint.Cap.ROUND
-        mClickEffectPaint.isAntiAlias = true
-        mClickEffectPaint.color = mEffectColor
+        mPaintPoint.style = Paint.Style.FILL
+        mPaintPoint.strokeCap = Paint.Cap.ROUND
+        mPaintPoint.isAntiAlias = true
+        mPaintPoint.color = mPointColor
 
         mPath.reset()
         mPath.moveTo(mIndicatorRadius, height * .4F)
-        mPath.lineTo(width * .95F, height * .2F)
-        mPath.arcTo(width * .93F, height * .2F, width * .97F, height * .8F, -90F, 180F, false)
+        mPath.lineTo(width * .95F, height * .24F)
+        mPath.arcTo(width * .93F, height * .24F, width * .97F, height * .76F, -90F, 180F, false)
         mPath.lineTo(mIndicatorRadius, height * .6F)
         mPath.arcTo(mIndicatorRadius * .8f, height * .4F, mIndicatorRadius * 1.2f, height * .6F, 90F, 180F, false)
 
-//        val bgDrawable: LayerDrawable = ContextCompat.getDrawable(context, R.drawable.progress_bg) as LayerDrawable
-//        val bg = bgDrawable.findDrawableByLayerId(R.id.barBg) as GradientDrawable?
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            bg?.setTint(mBackgroundColor)
-//        }
-//        val border = bgDrawable.findDrawableByLayerId(R.id.borderBg) as GradientDrawable?
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            border?.setTint(mBorderColor)
-//        }
-//        this.background = bgDrawable
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawPath(mPath, mClickEffectPaint)
-        if (::mBitmap.isInitialized)
-        //TODO check bitmap
-            canvas.drawBitmap(mBitmap, progress * width - mBitmap.width / 2, height / 2F - mBitmap.height / 2, mPaintIndicator)
-        else {
-            indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
-            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .45f, mPaintIndicator)
+        canvas.drawPath(mPath, mPaintBg)
+        indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
+        if (stepperCount > 0) {
+            for (i in 0 until stepperCount) {
+                canvas.drawCircle((width - 2 * mIndicatorRadius) / (stepperCount - 1) * i + mIndicatorRadius, height / 2F, 5F, mPaintPoint)
+            }
         }
+        canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .45f, mPaintIndicator)
     }
 
     private fun getDistance(x: Float): Float {
@@ -217,8 +168,8 @@ class StepperSlider @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isTouchedNear(event.x)
-                if (isRotateEffectEnabled)
-                    startAnimation()
+//                if (isStepperEnabled)
+//                    startAnimation()
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -258,31 +209,5 @@ class StepperSlider @JvmOverloads constructor(
         moveAnim.duration = 80
         moveAnim.interpolator = AccelerateInterpolator()
         moveAnim.start()
-    }
-
-    private fun startAnimation() {
-        val clickEffectAnim = ObjectAnimator.ofFloat(
-                this, "effectRadius", mIndicatorRadius, mIndicatorRadius + 20)
-        clickEffectAnim.repeatCount = 1
-        clickEffectAnim.repeatMode = ValueAnimator.REVERSE
-        clickEffectAnim.duration = 150
-        clickEffectAnim.interpolator = LinearInterpolator()
-        clickEffectAnim.start()
-        clickEffectAnim.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationRepeat(animation: Animator?) {
-            }
-
-            override fun onAnimationEnd(animation: Animator?) {
-                mEffectRadius = 0f
-                clickEffectAnim.removeAllListeners()
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-            }
-
-        })
     }
 }
