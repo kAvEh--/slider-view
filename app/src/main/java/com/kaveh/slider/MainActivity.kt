@@ -9,6 +9,5 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        findViewById<DeepProgressView>(R.id.arc_progress_2).rotateEffectEnabled = false
     }
 }

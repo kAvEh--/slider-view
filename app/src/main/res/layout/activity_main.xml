@@ -12,20 +12,30 @@
         android:layout_height="80dp"
         android:layout_margin="30dp"
         android:padding="30dp"
-        app:layout_constraintBottom_toTopOf="@id/arc_progress_2"
+        app:layout_constraintBottom_toTopOf="@id/deep_progress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.kaveh.sliderview.DeepProgressView
-        android:id="@+id/arc_progress_2"
+        android:id="@+id/deep_progress"
         android:layout_width="0dp"
         android:layout_height="15dp"
         android:layout_margin="30dp"
-        android:padding="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/stepper"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/arc_progress" />
+
+    <com.kaveh.sliderview.StepperSlider
+        android:id="@+id/stepper"
+        android:layout_width="0dp"
+        android:layout_height="25dp"
+        android:layout_margin="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="#27F36A21"
+        app:layout_constraintTop_toBottomOf="@id/deep_progress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
