@@ -13,7 +13,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -42,7 +41,7 @@ class DeepProgressView @JvmOverloads constructor(
     private lateinit var mBitmap: Bitmap
     private lateinit var mListener: OnCustomEventListener
     private var mBackgroundColor = Color.parseColor("#c1c1c1")
-    private var mForegroundColor = Color.parseColor("#6200EE")
+    private var mBorderColor = Color.parseColor("#6200EE")
     private var mIndicatorColor = Color.parseColor("#03DAC5")
     private var mEffectColor = Color.parseColor("#F43636")
     private val mBallPaint = Paint()
@@ -101,9 +100,9 @@ class DeepProgressView @JvmOverloads constructor(
         }
 
     var accentColor: Int
-        get() = mForegroundColor
+        get() = mBorderColor
         set(color) {
-            mForegroundColor = color
+            mBorderColor = color
             invalidate()
         }
 
@@ -148,15 +147,15 @@ class DeepProgressView @JvmOverloads constructor(
         mPaintProgress.strokeWidth = 3.0F
         mPaintProgress.strokeCap = Paint.Cap.ROUND
         mPaintProgress.isAntiAlias = true
-        mPaintProgress.color = mForegroundColor
+        mPaintProgress.color = mBorderColor
         mPaintIndicator.style = Paint.Style.FILL
         mPaintIndicator.strokeCap = Paint.Cap.ROUND
         mPaintIndicator.isAntiAlias = true
         mPaintIndicator.color = mIndicatorColor
-//        mPaintIndicator.setShadowLayer(mIndicatorRadius, 0.0f, 0.0f, Color.BLACK)
+        mPaintIndicator.setShadowLayer(mIndicatorRadius / 3, 0.0f, 0.0f, Color.BLACK)
         mBallPaint.style = Paint.Style.STROKE
         mBallPaint.strokeCap = Paint.Cap.ROUND
-        mBallPaint.strokeWidth = 5F
+        mBallPaint.strokeWidth = 1F
         mBallPaint.isAntiAlias = true
         mBallPaint.color = Color.MAGENTA
         mClickEffectPaint.style = Paint.Style.STROKE
@@ -168,7 +167,11 @@ class DeepProgressView @JvmOverloads constructor(
         val bgDrawable: LayerDrawable = ContextCompat.getDrawable(context, R.drawable.progress_bg) as LayerDrawable
         val bg = bgDrawable.findDrawableByLayerId(R.id.barBg) as GradientDrawable?
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            bg?.setTint(Color.RED)
+            bg?.setTint(mBackgroundColor)
+        }
+        val border = bgDrawable.findDrawableByLayerId(R.id.borderBg) as GradientDrawable?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            border?.setTint(mBorderColor)
         }
         this.background = bgDrawable
     }

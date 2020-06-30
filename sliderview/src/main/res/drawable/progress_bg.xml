@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- "background shadow" -->
-    <item>
-        <shape android:shape="rectangle">
-            <corners android:radius="20dp" />
+    <item
+        android:id="@+id/borderBg">
+        <shape android:shape="rectangle" >
             <solid android:color="#000000" />
+
+            <corners android:radius="15dp" />
         </shape>
     </item>
     <!-- background color -->
@@ -16,7 +18,7 @@
         android:top="3px">
         <shape android:shape="rectangle">
             <corners android:radius="20dp" />
-            <solid android:color="#E3E3E3" />
+            <solid android:color="#FFFFFF" />
         </shape>
     </item>
     <!-- over left shadow -->
@@ -26,10 +28,11 @@
 
             <gradient
                 android:angle="180"
-                android:centerColor="#00FF0000"
-                android:centerX="0.9"
-                android:endColor="#99000000"
-                android:startColor="#00FF0000" />
+                android:centerColor="#11FFFFFF"
+                android:centerX="0.98"
+                android:endColor="#22000000"
+                android:startColor="#00000000"
+                android:type="linear"/>
         </shape>
     </item>
     <!-- over right shadow -->
@@ -39,10 +42,11 @@
 
             <gradient
                 android:angle="360"
-                android:centerColor="#00FF0000"
-                android:centerX="0.9"
-                android:endColor="#99000000"
-                android:startColor="#00FF0000" />
+                android:centerColor="#11000000"
+                android:centerX="0.98"
+                android:endColor="#22000000"
+                android:startColor="#00000000"
+                android:type="linear"/>
         </shape>
     </item>
     <!-- over top shadow -->
@@ -52,9 +56,9 @@
 
             <gradient
                 android:angle="-90"
-                android:centerColor="#00FF0000"
-                android:centerY="0.9"
-                android:endColor="#00FF0000"
+                android:centerColor="#11000000"
+                android:centerY="0.4"
+                android:endColor="#00000000"
                 android:startColor="#99000000"
                 android:type="linear" />
         </shape>
@@ -66,10 +70,10 @@
 
             <gradient
                 android:angle="90"
-                android:centerColor="#00FF0000"
-                android:centerY="0.9"
-                android:endColor="#00FF0000"
-                android:startColor="#99000000"
+                android:centerColor="#00000000"
+                android:centerY="0.05"
+                android:endColor="#00000000"
+                android:startColor="#00000000"
                 android:type="linear" />
         </shape>
     </item>

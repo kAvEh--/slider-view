@@ -20,7 +20,7 @@
     <com.kaveh.sliderview.DeepProgressView
         android:id="@+id/arc_progress_2"
         android:layout_width="0dp"
-        android:layout_height="20dp"
+        android:layout_height="15dp"
         android:layout_margin="30dp"
         android:padding="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
