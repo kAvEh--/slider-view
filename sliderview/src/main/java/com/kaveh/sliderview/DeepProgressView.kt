@@ -12,11 +12,9 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AccelerateInterpolator
 import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
-import kotlin.math.pow
-import kotlin.math.sqrt
-import kotlin.properties.Delegates
 
 class DeepProgressView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -237,12 +235,11 @@ class DeepProgressView @JvmOverloads constructor(
             }
             MotionEvent.ACTION_UP -> {
                 if (!isTouched) {
-                    //TODO animate this .....
-                    progress = when {
+                    moveWithAnimation(when {
                         event.x < mIndicatorRadius -> 0F
                         event.x > width - mIndicatorRadius -> 1F
                         else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
-                    }
+                    })
                 }
                 isTouched = false
             }
@@ -252,6 +249,16 @@ class DeepProgressView @JvmOverloads constructor(
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    private fun moveWithAnimation(newProgress: Float) {
+        val tmp = progress
+        val moveAnim = ObjectAnimator.ofFloat(
+                this, "progress", tmp, newProgress)
+        moveAnim.repeatCount = 0
+        moveAnim.duration = 80
+        moveAnim.interpolator = AccelerateInterpolator()
+        moveAnim.start()
     }
 
     private fun startAnimation() {
