@@ -16,6 +16,7 @@ import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.properties.Delegates
 
 class DeepProgressView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -41,12 +42,14 @@ class DeepProgressView @JvmOverloads constructor(
     private lateinit var mBitmap: Bitmap
     private lateinit var mListener: OnCustomEventListener
     private var mBackgroundColor = Color.parseColor("#c1c1c1")
-    private var mBorderColor = Color.parseColor("#6200EE")
+    private var mBorderColor = Color.parseColor("#c1c1c1")
     private var mIndicatorColor = Color.parseColor("#03DAC5")
     private var mEffectColor = Color.parseColor("#F43636")
     private val mBallPaint = Paint()
     private var stripesWidth = 0F
     private var ballIndicator = false
+    private var indicatorPX: Float = 0F
+    private var indicatorPY: Float = 0F
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -130,6 +133,7 @@ class DeepProgressView @JvmOverloads constructor(
 
     @SuppressLint("ResourceAsColor")
     private fun createObjects() {
+        indicatorPY = height / 2F
         mIndicatorRadius = height * .5F
         oval.left = strokeWidth
         oval.top = strokeWidth
@@ -178,9 +182,11 @@ class DeepProgressView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         if (::mBitmap.isInitialized)
+        //TODO check bitmap
             canvas.drawBitmap(mBitmap, progress * width - mBitmap.width / 2, height / 2F - mBitmap.height / 2, mPaintIndicator)
         else {
-            canvas.drawCircle(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius, height / 2F, mIndicatorRadius * .8f, mPaintIndicator)
+            indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
+            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .8f, mPaintIndicator)
         }
         if (rotateEffectEnabled) {
             var tt = getDistance(progress * width + mIndicatorRadius)
@@ -203,8 +209,8 @@ class DeepProgressView @JvmOverloads constructor(
         return (x - ((x / stripesWidth).toInt() * stripesWidth))
     }
 
-    private fun isTouchedNear(x: Float, y: Float) {
-        if (sqrt(((progress * width - x).pow(2) + (height / 2F - y).pow(2)).toDouble()) < mIndicatorRadius + 5) {
+    private fun isTouchedNear(x: Float) {
+        if (Math.abs(indicatorPX - x) < mIndicatorRadius + 5) {
             isTouched = true
         }
     }
@@ -213,7 +219,7 @@ class DeepProgressView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                isTouchedNear(event.x, event.y)
+                isTouchedNear(event.x)
                 if (isRotateEffectEnabled)
                     startAnimation()
                 return true
@@ -230,6 +236,14 @@ class DeepProgressView @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_UP -> {
+                if (!isTouched) {
+                    //TODO animate this .....
+                    progress = when {
+                        event.x < mIndicatorRadius -> 0F
+                        event.x > width - mIndicatorRadius -> 1F
+                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
+                    }
+                }
                 isTouched = false
             }
             MotionEvent.ACTION_POINTER_UP -> {
