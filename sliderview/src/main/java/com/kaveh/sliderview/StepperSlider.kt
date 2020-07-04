@@ -154,8 +154,7 @@ class StepperSlider @JvmOverloads constructor(
         mProgressPath.reset()
         mProgressPath.moveTo(mIndicatorRadius, height * .4F)
         mProgressPath.lineTo(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius, height * (.4F - progress * .16F))
-        mProgressPath.lineTo(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius, height * (.6F + progress * .16F))
-//        mPath.arcTo(width * .93F, height * .24F, width * .97F, height * .76F, -90F, 180F, false)
+        mProgressPath.arcTo(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius - width * .01F, height * (.4F - progress * .16F), progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius + width * .01F, height * (.6F + progress * .16F), -90F, 180F, false)
         mProgressPath.lineTo(mIndicatorRadius, height * .6F)
         mProgressPath.arcTo(mIndicatorRadius * .8f, height * .4F, mIndicatorRadius * 1.2f, height * .6F, 90F, 180F, false)
     }

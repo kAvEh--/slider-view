@@ -10,6 +10,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        findViewById<StepperSlider>(R.id.stepper).stepper = 4
+        findViewById<StepperSlider>(R.id.stepper).stepper = 5
     }
 }

@@ -32,9 +32,19 @@
         android:layout_width="0dp"
         android:layout_height="25dp"
         android:layout_margin="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/stepper_2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/deep_progress" />
+
+    <com.kaveh.sliderview.StepperSlider
+        android:id="@+id/stepper_2"
+        android:layout_width="0dp"
+        android:layout_height="25dp"
+        android:layout_margin="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/stepper" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
