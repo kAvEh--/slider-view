@@ -31,7 +31,7 @@ class StepperSlider @JvmOverloads constructor(
     private lateinit var mBitmap: Bitmap
     private lateinit var mListener: OnCustomEventListener
     private var mBackgroundColor = Color.parseColor("#c1c1c1")
-    private var mBorderColor = Color.parseColor("#215123")
+    private var mProgressColor = Color.parseColor("#6200EE")
     private var mIndicatorColor = Color.parseColor("#FFFFFF")
     private var mFillPointColor = Color.parseColor("#FFFFFF")
     private var mEmptyPointColor = Color.parseColor("#000000")
@@ -81,9 +81,9 @@ class StepperSlider @JvmOverloads constructor(
         }
 
     var accentColor: Int
-        get() = mBorderColor
+        get() = mProgressColor
         set(color) {
-            mBorderColor = color
+            mProgressColor = color
             invalidate()
         }
 
@@ -124,7 +124,7 @@ class StepperSlider @JvmOverloads constructor(
         mPaintProgress.style = Paint.Style.FILL
         mPaintProgress.strokeCap = Paint.Cap.ROUND
         mPaintProgress.isAntiAlias = true
-        mPaintProgress.color = mBorderColor
+        mPaintProgress.color = mProgressColor
         mPaintIndicator.style = Paint.Style.STROKE
         mPaintIndicator.strokeWidth = 14F
         mPaintIndicator.strokeCap = Paint.Cap.ROUND

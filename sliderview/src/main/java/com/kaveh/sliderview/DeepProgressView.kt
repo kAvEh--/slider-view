@@ -6,8 +6,10 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.ClipDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.ScaleDrawable
 import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -15,6 +17,7 @@ import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
+import kotlin.math.abs
 
 class DeepProgressView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -43,11 +46,14 @@ class DeepProgressView @JvmOverloads constructor(
     private var mBorderColor = Color.parseColor("#c1c1c1")
     private var mIndicatorColor = Color.parseColor("#03DAC5")
     private var mEffectColor = Color.parseColor("#F43636")
+    private var mProgressColor = Color.parseColor("#6200EE")
     private val mBallPaint = Paint()
     private var stripesWidth = 0F
     private var ballIndicator = false
     private var indicatorPX: Float = 0F
     private var indicatorPY: Float = 0F
+    private var progressLayer: ClipDrawable? = null
+    private var startSpace = 1
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -64,6 +70,11 @@ class DeepProgressView @JvmOverloads constructor(
         get() = mProgress
         set(progress) {
             if (mProgress != progress && (progress >= 0 || progress <= 1)) {
+                progressLayer?.level = when {
+                    progress == 0F -> 0
+                    progress == 1F -> 10000
+                    else -> (progress * (10000 - 2 * startSpace) + startSpace).toInt()
+                }
                 mProgress = progress
                 if (::mListener.isInitialized) {
                     mListener.onChanged(mProgress)
@@ -133,6 +144,7 @@ class DeepProgressView @JvmOverloads constructor(
     private fun createObjects() {
         indicatorPY = height / 2F
         mIndicatorRadius = height * .5F
+        startSpace = (mIndicatorRadius / width * 10000).toInt()
         oval.left = strokeWidth
         oval.top = strokeWidth
         oval.right = width.toFloat() - strokeWidth
@@ -149,7 +161,7 @@ class DeepProgressView @JvmOverloads constructor(
         mPaintProgress.strokeWidth = 3.0F
         mPaintProgress.strokeCap = Paint.Cap.ROUND
         mPaintProgress.isAntiAlias = true
-        mPaintProgress.color = mBorderColor
+        mPaintProgress.color = mProgressColor
         mPaintIndicator.style = Paint.Style.FILL
         mPaintIndicator.strokeCap = Paint.Cap.ROUND
         mPaintIndicator.isAntiAlias = true
@@ -175,6 +187,8 @@ class DeepProgressView @JvmOverloads constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             border?.setTint(mBorderColor)
         }
+        progressLayer = bgDrawable.findDrawableByLayerId(R.id.progress) as ClipDrawable?
+
         this.background = bgDrawable
     }
 
@@ -184,7 +198,7 @@ class DeepProgressView @JvmOverloads constructor(
             canvas.drawBitmap(mBitmap, progress * width - mBitmap.width / 2, height / 2F - mBitmap.height / 2, mPaintIndicator)
         else {
             indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
-            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .8f, mPaintIndicator)
+            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .85f, mPaintIndicator)
         }
         if (rotateEffectEnabled) {
             var tt = getDistance(progress * width + mIndicatorRadius)
@@ -208,7 +222,7 @@ class DeepProgressView @JvmOverloads constructor(
     }
 
     private fun isTouchedNear(x: Float) {
-        if (Math.abs(indicatorPX - x) < mIndicatorRadius + 5) {
+        if (abs(indicatorPX - x) < mIndicatorRadius + 5) {
             isTouched = true
         }
     }

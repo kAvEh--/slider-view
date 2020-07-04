@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- "background shadow" -->
-    <item
-        android:id="@+id/borderBg">
-        <shape android:shape="rectangle" >
-            <solid android:color="#000000" />
-
+    <item android:id="@+id/borderBg">
+        <shape android:shape="rectangle">
             <corners android:radius="15dp" />
+
+            <solid android:color="#000000" />
         </shape>
     </item>
     <!-- background color -->
@@ -21,6 +20,15 @@
             <solid android:color="#FFFFFF" />
         </shape>
     </item>
+    <!--  progress color  -->
+    <item android:id="@+id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="20dip" />
+                <solid android:color="#6200EE" />
+            </shape>
+        </clip>
+    </item>
     <!-- over left shadow -->
     <item>
         <shape android:shape="rectangle">
@@ -32,7 +40,7 @@
                 android:centerX="0.98"
                 android:endColor="#22000000"
                 android:startColor="#00000000"
-                android:type="linear"/>
+                android:type="linear" />
         </shape>
     </item>
     <!-- over right shadow -->
@@ -46,7 +54,7 @@
                 android:centerX="0.98"
                 android:endColor="#22000000"
                 android:startColor="#00000000"
-                android:type="linear"/>
+                android:type="linear" />
         </shape>
     </item>
     <!-- over top shadow -->
