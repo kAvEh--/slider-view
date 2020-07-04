@@ -145,8 +145,8 @@ class StepperSlider @JvmOverloads constructor(
         canvas.drawPath(mPath, mPaintBg)
         indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
         if (stepperCount > 0) {
-            for (i in 0 until stepperCount) {
-                canvas.drawCircle((width - 2 * mIndicatorRadius) / (stepperCount - 1) * i + mIndicatorRadius, height / 2F, 5F, mPaintPoint)
+            for (i in 1 until stepperCount) {
+                canvas.drawCircle((width - 2 * mIndicatorRadius) / (stepperCount) * i + mIndicatorRadius, height / 2F, 5F, mPaintPoint)
             }
         }
         canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .45f, mPaintIndicator)
@@ -168,8 +168,6 @@ class StepperSlider @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isTouchedNear(event.x)
-//                if (isStepperEnabled)
-//                    startAnimation()
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -184,13 +182,11 @@ class StepperSlider @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_UP -> {
-                if (!isTouched) {
-                    moveWithAnimation(when {
-                        event.x < mIndicatorRadius -> 0F
-                        event.x > width - mIndicatorRadius -> 1F
-                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
-                    })
-                }
+                moveWithAnimation(when {
+                    event.x < mIndicatorRadius -> 0F
+                    event.x > width - mIndicatorRadius -> 1F
+                    else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
+                })
                 isTouched = false
             }
             MotionEvent.ACTION_POINTER_UP -> {
@@ -203,8 +199,13 @@ class StepperSlider @JvmOverloads constructor(
 
     private fun moveWithAnimation(newProgress: Float) {
         val tmp = progress
+        var destination = newProgress
+        if (stepperCount > 0) {
+            val part = 1F / stepperCount
+            destination = Math.round(newProgress / part) * part
+        }
         val moveAnim = ObjectAnimator.ofFloat(
-                this, "progress", tmp, newProgress)
+                this, "progress", tmp, destination)
         moveAnim.repeatCount = 0
         moveAnim.duration = 80
         moveAnim.interpolator = AccelerateInterpolator()
