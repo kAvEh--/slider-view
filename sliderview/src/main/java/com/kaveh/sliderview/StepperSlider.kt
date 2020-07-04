@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import androidx.annotation.RequiresApi
+import kotlin.math.roundToInt
 
 class StepperSlider @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -30,15 +31,17 @@ class StepperSlider @JvmOverloads constructor(
     private lateinit var mBitmap: Bitmap
     private lateinit var mListener: OnCustomEventListener
     private var mBackgroundColor = Color.parseColor("#c1c1c1")
-    private var mBorderColor = Color.parseColor("#c1c1c1")
+    private var mBorderColor = Color.parseColor("#215123")
     private var mIndicatorColor = Color.parseColor("#FFFFFF")
-    private var mPointColor = Color.parseColor("#000000")
+    private var mFillPointColor = Color.parseColor("#FFFFFF")
+    private var mEmptyPointColor = Color.parseColor("#000000")
     private val mBallPaint = Paint()
     private var stripesWidth = 0F
     private var ballIndicator = false
     private var indicatorPX: Float = 0F
     private var indicatorPY: Float = 0F
     private var mPath = Path()
+    private var mProgressPath = Path()
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -91,10 +94,17 @@ class StepperSlider @JvmOverloads constructor(
             invalidate()
         }
 
-    var pointColor: Int
-        get() = mPointColor
+    var pointColorFill: Int
+        get() = mFillPointColor
         set(color) {
-            mPointColor = color
+            mFillPointColor = color
+            invalidate()
+        }
+
+    var pointColorEmpty: Int
+        get() = mEmptyPointColor
+        set(color) {
+            mEmptyPointColor = color
             invalidate()
         }
 
@@ -111,8 +121,7 @@ class StepperSlider @JvmOverloads constructor(
         mPaintBg.strokeCap = Paint.Cap.ROUND
         mPaintBg.isAntiAlias = true
         mPaintBg.color = mBackgroundColor
-        mPaintProgress.style = Paint.Style.STROKE
-        mPaintProgress.strokeWidth = 3.0F
+        mPaintProgress.style = Paint.Style.FILL
         mPaintProgress.strokeCap = Paint.Cap.ROUND
         mPaintProgress.isAntiAlias = true
         mPaintProgress.color = mBorderColor
@@ -130,7 +139,6 @@ class StepperSlider @JvmOverloads constructor(
         mPaintPoint.style = Paint.Style.FILL
         mPaintPoint.strokeCap = Paint.Cap.ROUND
         mPaintPoint.isAntiAlias = true
-        mPaintPoint.color = mPointColor
 
         mPath.reset()
         mPath.moveTo(mIndicatorRadius, height * .4F)
@@ -141,11 +149,30 @@ class StepperSlider @JvmOverloads constructor(
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun editProgressPath() {
+        mProgressPath.reset()
+        mProgressPath.moveTo(mIndicatorRadius, height * .4F)
+        mProgressPath.lineTo(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius, height * (.4F - progress * .16F))
+        mProgressPath.lineTo(progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius, height * (.6F + progress * .16F))
+//        mPath.arcTo(width * .93F, height * .24F, width * .97F, height * .76F, -90F, 180F, false)
+        mProgressPath.lineTo(mIndicatorRadius, height * .6F)
+        mProgressPath.arcTo(mIndicatorRadius * .8f, height * .4F, mIndicatorRadius * 1.2f, height * .6F, 90F, 180F, false)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onDraw(canvas: Canvas) {
         canvas.drawPath(mPath, mPaintBg)
+        editProgressPath()
+        canvas.drawPath(mProgressPath, mPaintProgress)
+
         indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
         if (stepperCount > 0) {
             for (i in 1 until stepperCount) {
+                if (i.toFloat() / stepperCount <= progress)
+                    mPaintPoint.color = mFillPointColor
+                else
+                    mPaintPoint.color = mEmptyPointColor
                 canvas.drawCircle((width - 2 * mIndicatorRadius) / (stepperCount) * i + mIndicatorRadius, height / 2F, 5F, mPaintPoint)
             }
         }
@@ -202,7 +229,7 @@ class StepperSlider @JvmOverloads constructor(
         var destination = newProgress
         if (stepperCount > 0) {
             val part = 1F / stepperCount
-            destination = Math.round(newProgress / part) * part
+            destination = (newProgress / part).roundToInt() * part
         }
         val moveAnim = ObjectAnimator.ofFloat(
                 this, "progress", tmp, destination)
