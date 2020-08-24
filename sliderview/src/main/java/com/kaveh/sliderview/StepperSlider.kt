@@ -194,6 +194,13 @@ class StepperSlider @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isTouchedNear(event.x)
+                if (!isTouched) {
+                    moveWithAnimation(when {
+                        event.x < mIndicatorRadius -> 0F
+                        event.x > width - mIndicatorRadius -> 1F
+                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
+                    })
+                }
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -208,11 +215,6 @@ class StepperSlider @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_UP -> {
-                moveWithAnimation(when {
-                    event.x < mIndicatorRadius -> 0F
-                    event.x > width - mIndicatorRadius -> 1F
-                    else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
-                })
                 isTouched = false
             }
             MotionEvent.ACTION_POINTER_UP -> {
