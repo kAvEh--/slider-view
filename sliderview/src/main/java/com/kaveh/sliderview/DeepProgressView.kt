@@ -198,7 +198,7 @@ class DeepProgressView @JvmOverloads constructor(
             canvas.drawBitmap(mBitmap, progress * width - mBitmap.width / 2, height / 2F - mBitmap.height / 2, mPaintIndicator)
         else {
             indicatorPX = progress * (width - 2 * mIndicatorRadius) + mIndicatorRadius
-            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .85f, mPaintIndicator)
+            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .88f, mPaintIndicator)
         }
         if (rotateEffectEnabled) {
             var tt = getDistance(progress * width + mIndicatorRadius)
