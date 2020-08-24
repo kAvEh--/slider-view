@@ -234,6 +234,13 @@ class DeepProgressView @JvmOverloads constructor(
                 isTouchedNear(event.x)
                 if (isRotateEffectEnabled)
                     startAnimation()
+                if (!isTouched) {
+                    moveWithAnimation(when {
+                        event.x < mIndicatorRadius -> 0F
+                        event.x > width - mIndicatorRadius -> 1F
+                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
+                    })
+                }
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -248,13 +255,6 @@ class DeepProgressView @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_UP -> {
-                if (!isTouched) {
-                    moveWithAnimation(when {
-                        event.x < mIndicatorRadius -> 0F
-                        event.x > width - mIndicatorRadius -> 1F
-                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
-                    })
-                }
                 isTouched = false
             }
             MotionEvent.ACTION_POINTER_UP -> {

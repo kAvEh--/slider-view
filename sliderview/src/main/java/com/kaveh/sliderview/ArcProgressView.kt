@@ -9,6 +9,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AccelerateInterpolator
 import android.view.animation.LinearInterpolator
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -268,12 +269,18 @@ class ArcProgressView @JvmOverloads constructor(
                 isTouchedNear(event.x, event.y)
                 if (isClickEffectEnabled)
                     startAnimation()
+                if (!isTouched) {
+                    moveWithAnimation(when {
+                        event.x < mIndicatorRadius -> 0F
+                        event.x > width - mIndicatorRadius -> 1F
+                        else -> (event.x - mIndicatorRadius) / (width - 2 * mIndicatorRadius)
+                    })
+                }
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
             }
             MotionEvent.ACTION_MOVE -> {
-                //TODO must improve tracking of indicator
                 if (isTouched) {
                     progress = when {
                         event.x < 0 -> 0F
@@ -291,6 +298,16 @@ class ArcProgressView @JvmOverloads constructor(
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    private fun moveWithAnimation(newProgress: Float) {
+        val tmp = progress
+        val moveAnim = ObjectAnimator.ofFloat(
+                this, "progress", tmp, newProgress)
+        moveAnim.repeatCount = 0
+        moveAnim.duration = 80
+        moveAnim.interpolator = AccelerateInterpolator()
+        moveAnim.start()
     }
 
     private fun startAnimation() {
