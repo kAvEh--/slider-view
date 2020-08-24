@@ -32,6 +32,7 @@ class ArcProgressView @JvmOverloads constructor(
     private var mPath = Path()
     private var mPath2 = Path()
     private var mProgress = 0F
+    private lateinit var endPoint: Pair<Float, Float>
     private lateinit var p0: Pair<Float, Float>
     private lateinit var p1: Pair<Float, Float>
     private lateinit var p2: Pair<Float, Float>
@@ -47,6 +48,7 @@ class ArcProgressView @JvmOverloads constructor(
     private val mBallPaint = Paint()
     private var stripesWidth = 0F
     private var ballIndicator = false
+    val tttt = RectF()
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -54,6 +56,7 @@ class ArcProgressView @JvmOverloads constructor(
         p1 = Pair(width / 4f, height / 2f - height / 4f)
         p2 = Pair(width / 2f + width / 4f, height / 2f - height / 4f)
         p3 = Pair(width.toFloat() - mIndicatorRadius * 2, height.toFloat() - height / 4f)
+        endPoint = Pair(p0.first, p0.second)
         stripesWidth = width / 45F
         createObjects()
     }
@@ -68,12 +71,18 @@ class ArcProgressView @JvmOverloads constructor(
         set(progress) {
             if (mProgress != progress && (progress >= 0 || progress <= 1)) {
                 mProgress = progress
+                reCalculate()
                 if (::mListener.isInitialized) {
                     mListener.onChanged(mProgress)
                 }
                 invalidate()
             }
         }
+
+    private fun reCalculate() {
+        mPath2 = getSubPath(mPath, 0F, mProgress)
+        endPoint = getPoint(mProgress)
+    }
 
     var clickEffectEnabled: Boolean
         get() = isClickEffectEnabled
@@ -178,20 +187,18 @@ class ArcProgressView @JvmOverloads constructor(
                 p3.first, p3.second
         )
         canvas.drawPath(mPath, mPaintBg)
-        val tmp = getPoint(mProgress)
-        val path2 = getSubPath(mPath, 0F, mProgress)
-        mPath2.reset()
-        mPath2.addCircle(tmp.first, tmp.second, mIndicatorRadius, Path.Direction.CW)
-        canvas.drawPath(path2, mPaintProgress)
+//        mPath2.reset()
+//        mPath2.addCircle(tmp.first, tmp.second, mIndicatorRadius, Path.Direction.CW)
+        canvas.drawPath(mPath2, mPaintProgress)
 
         if (::mBitmap.isInitialized)
-            canvas.drawBitmap(mBitmap, tmp.first - mBitmap.width / 2, tmp.second - mBitmap.height / 2, mPaintIndicator)
+            canvas.drawBitmap(mBitmap, endPoint.first - mBitmap.width / 2, endPoint.second - mBitmap.height / 2, mPaintIndicator)
         else {
-            canvas.drawCircle(tmp.first, tmp.second, mIndicatorRadius, mPaintIndicator)
+            canvas.drawCircle(endPoint.first, endPoint.second, mIndicatorRadius, mPaintIndicator)
         }
 
         if (isClickEffectEnabled) {
-            canvas.drawCircle(tmp.first, tmp.second, mEffectRadius, mClickEffectPaint)
+            canvas.drawCircle(endPoint.first, endPoint.second, mEffectRadius, mClickEffectPaint)
         }
 //        var tt = getDistance(tmp.first + mIndicatorRadius)
 //        changeColor()
@@ -225,18 +232,20 @@ class ArcProgressView @JvmOverloads constructor(
 
     private fun getPoint(progress: Float): Pair<Float, Float> {
         val mPoint: Pair<Float, Float>
-        var x = (1 - progress).toDouble().pow(3.0) * p0.first +
-                3 * (1 - progress).toDouble().pow(2.0) * progress * p1.first +
-                3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.first +
-                progress.toDouble().pow(3.0) * p3.first
+        mPath2.computeBounds(tttt, true)
+//        var x = (1 - progress).toDouble().pow(3.0) * p0.first +
+//                3 * (1 - progress).toDouble().pow(2.0) * progress * p1.first +
+//                3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.first +
+//                progress.toDouble().pow(3.0) * p3.first
+        var x = tttt.right
         var y = (1 - progress).toDouble().pow(3.0) * p0.second +
                 3 * (1 - progress).toDouble().pow(2.0) * progress * p1.second +
                 3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.second +
                 progress.toDouble().pow(3.0) * p3.second
         if (x < p0.first) {
-            x = p0.first.toDouble()
+            x = p0.first
         } else if (x > p3.first) {
-            x = p3.first.toDouble()
+            x = p3.first
         }
         if (y > p0.second) {
             y = p0.second.toDouble()
