@@ -48,7 +48,6 @@ class ArcProgressView @JvmOverloads constructor(
     private val mBallPaint = Paint()
     private var stripesWidth = 0F
     private var ballIndicator = false
-    val tttt = RectF()
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -232,12 +231,13 @@ class ArcProgressView @JvmOverloads constructor(
 
     private fun getPoint(progress: Float): Pair<Float, Float> {
         val mPoint: Pair<Float, Float>
-        mPath2.computeBounds(tttt, true)
+        val tmpRect = RectF()
+        mPath2.computeBounds(tmpRect, true)
 //        var x = (1 - progress).toDouble().pow(3.0) * p0.first +
 //                3 * (1 - progress).toDouble().pow(2.0) * progress * p1.first +
 //                3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.first +
 //                progress.toDouble().pow(3.0) * p3.first
-        var x = tttt.right
+        var x = tmpRect.right
         var y = (1 - progress).toDouble().pow(3.0) * p0.second +
                 3 * (1 - progress).toDouble().pow(2.0) * progress * p1.second +
                 3 * (1 - progress) * progress.toDouble().pow(2.0) * p2.second +
