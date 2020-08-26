@@ -175,11 +175,7 @@ class StepperSlider @JvmOverloads constructor(
                 canvas.drawCircle((width - 2 * mIndicatorRadius) / (stepperCount) * i + mIndicatorRadius, height / 2F, 5F, mPaintPoint)
             }
         }
-        if (isTouched) {
-            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .55f, mPaintIndicator)
-        } else {
-            canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .45f, mPaintIndicator)
-        }
+        canvas.drawCircle(indicatorPX, indicatorPY, mIndicatorRadius * .45f, mPaintIndicator)
     }
 
     private fun getDistance(x: Float): Float {
