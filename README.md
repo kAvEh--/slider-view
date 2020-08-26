@@ -3,10 +3,10 @@
 [![](https://jitpack.io/v/kAvEh--/slider-view.svg)](https://jitpack.io/#kAvEh--/slider-view)
 
 Four Progress Bar Implementation in Android:
-- _Arc Progress Bar Slider
-- _Deep Progress Bar
-- _Ascending Progress Bar
-- _Stepper Ascending Progress Bar
+- Arc Progress Bar Slider
+- Deep Progress Bar
+- Ascending Progress Bar
+- Stepper Ascending Progress Bar
 
 ## Usage
 
@@ -57,7 +57,7 @@ dependencies {
 ```
 2. Set the stepper count for converting it to stepper slider
 ```kotlin
-    findViewById<StepperSlider>(R.id.stepper).stepper = 5 //Number of slices in Slider
+findViewById<StepperSlider>(R.id.stepper).stepper = 5 //Number of slices in Slider
 ```
 
 ## Requirements
